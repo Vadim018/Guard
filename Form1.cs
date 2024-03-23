@@ -20,6 +20,8 @@ namespace Guard
             listBox1.DrawItem += new DrawItemEventHandler(listBox1_DrawItem);
             listBox1.DoubleClick += new EventHandler(listBox1_DoubleClick);
             listBox1.MouseDown += new MouseEventHandler(listBox1_MouseDown);
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
         }
 
         private void listBox1_MouseDown(object sender, MouseEventArgs e)
@@ -52,7 +54,7 @@ namespace Guard
                 }
                 else
                 {
-                    MessageBox.Show("Selected file is not an image!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Selected file isn't an image!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -62,14 +64,23 @@ namespace Guard
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Multiselect = true;
             openFileDialog.Filter = "All files|*.*|Photo Files (*.jpg;*.jpeg;*.png;*.gif;*.bmp)|*.jpg;*.jpeg;*.png;*.gif;*.bmp|Video Files (*.mp4;*.mkv;*.avi;*.mov)|*.mp4;*.mkv;*.avi;*.mov";
-            
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
+                foreach (var file in selectedFiles)
+                {
+                    if (!IsImageFile(file) && !IsVideoFile(file))
+                    {
+                        MessageBox.Show($"The file '{Path.GetFileName(file)}' isn't a photo or video and can't be added!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
                 if (selectedFiles.Length < 2)
                 {
-                    MessageBox.Show("Please, select at least two photos or videos!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please, select at least two photos or videos!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
@@ -78,7 +89,7 @@ namespace Guard
 
                 if (photoCount > 0 && videoCount > 0)
                 {
-                    MessageBox.Show("Select files of only one type: either all photos or all videos!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select files of only one type: either all photos or all videos!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
                 selectedPhotos.AddRange(selectedFiles.Where(file => !selectedPhotos.Contains(file)));
@@ -90,6 +101,12 @@ namespace Guard
         {
             string extension = Path.GetExtension(fileName).ToLower();
             return extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".gif" || extension == ".bmp";
+        }
+
+        private bool IsVideoFile(string fileName)
+        {
+            string extension = Path.GetExtension(fileName).ToLower();
+            return extension == ".mp4" || extension == ".mkv" || extension == ".avi" || extension == ".mov";
         }
 
         private void UpdatePhotoList()
@@ -198,7 +215,7 @@ namespace Guard
                 using (var stream = File.OpenRead(filePath))
                 {
                     long fileSize = new FileInfo(filePath).Length;
-                    byte[] fileContent = new byte[Math.Min(fileSize, 4096)];
+                    byte[] fileContent = new byte[Math.Min(fileSize, 8192)];
                     stream.Read(fileContent, 0, fileContent.Length);
 
                     using (var md5 = System.Security.Cryptography.MD5.Create())
@@ -207,8 +224,8 @@ namespace Guard
                         return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
                     }
                 }
-            }
-            catch (Exception ex)
+            } 
+            catch (Exception ex) 
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 return null;
@@ -244,7 +261,7 @@ namespace Guard
 
                     if (File.Exists(newFilePath))
                     {
-                        MessageBox.Show("A file with that name already exists. Please choose another name!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("A file with that name already exists. Please choose another name!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         continue;
                     }
                     try
@@ -280,7 +297,7 @@ namespace Guard
         {
             if (!selectedPhotos.Any())
             {
-                MessageBox.Show("First, add photo or video!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("First, add photo or video to listbox!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -303,7 +320,7 @@ namespace Guard
             }
             else
             {
-                StylishMessageBox.Show("Duplicate Photos", "No duplicates found!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                StylishMessageBox.Show("No duplicates found among these files!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -311,13 +328,13 @@ namespace Guard
         {
             if (listBox1.SelectedIndex == -1)
             {
-                MessageBox.Show("Please, select a file to rename!", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please, select a file to rename!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             if (listBox1.SelectedIndices.Count > 1)
             {
-                MessageBox.Show("Please, select only one file to rename at a time!", "Multiple Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please, select only one file to rename at a time!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             string selectedFile = selectedPhotos[listBox1.SelectedIndex];
@@ -334,13 +351,13 @@ namespace Guard
         {
             if (selectedPhotos.Count == 0)
             {
-                MessageBox.Show("Please add files before saving.", "No Files", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please add files before saving!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             using (var folderDialog = new FolderBrowserDialog())
             {
-                folderDialog.Description = "Select a folder to save the files";
+                folderDialog.Description = "Select a folder to save the files!";
 
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -361,7 +378,7 @@ namespace Guard
 
                     if (File.Exists(destinationPath))
                     {
-                        var result = MessageBox.Show($"The file {fileName} already exists. Do you want to replace it?", "File Exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        var result = MessageBox.Show($"The file {fileName} already exists. Do you want to replace it?", "Information", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
                         if (result == DialogResult.No)
                         {
@@ -370,7 +387,7 @@ namespace Guard
                     }
                     File.Copy(file, destinationPath, true);
                 }
-                MessageBox.Show("Files have been successfully saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Files have been successfully saved!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -382,7 +399,7 @@ namespace Guard
         {
             if (selectedPhotos.Count > 0)
             {
-                var result = MessageBox.Show("Are you sure you want to delete all files?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                var result = MessageBox.Show("Are you sure you want to delete all files?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                 if (result == DialogResult.Yes)
                 {
@@ -403,7 +420,15 @@ namespace Guard
             }
             else
             {
-                MessageBox.Show("There are no files to delete.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("There are no files to delete!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Escape)
+            {
+                Close();
             }
         }
     }

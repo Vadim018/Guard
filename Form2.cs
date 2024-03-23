@@ -45,7 +45,7 @@ namespace Guard {
 
         private void button1_Click(object sender, EventArgs e) {
             if (listBox1.SelectedItems.Count == 0) {
-                MessageBox.Show("First, select the items you want to delete!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("First, select the items you want to delete!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             } else {
                 SelectedDuplicates = listBox1.SelectedItems.Cast<string>().ToList();
                 deletedFiles.AddRange(SelectedDuplicates);
