@@ -11,6 +11,7 @@ namespace Guard
     public partial class Form1 : Form
     {
         private List<string> selectedPhotos = new List<string>();
+        private List<string> previousSelectedPhotos = new List<string>();
 
         public Form1()
         {
@@ -43,20 +44,7 @@ namespace Guard
 
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex != -1)
-            {
-                string selectedFile = selectedPhotos[listBox1.SelectedIndex];
-
-                if (IsImageFile(selectedFile))
-                {
-                    Form3 form3 = new Form3(selectedFile);
-                    form3.Show();
-                }
-                else
-                {
-                    MessageBox.Show("Selected file isn't an image!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+           
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -234,7 +222,7 @@ namespace Guard
 
         private (DialogResult, List<string>) ShowFormDialog(List<string> duplicates)
         {
-            var form2 = new Form2(duplicates);
+            var form2 = new Form2(duplicates, selectedPhotos);
             var dialogResult = form2.ShowDialog();
             return (dialogResult, form2.SelectedDuplicates);
         }
@@ -306,6 +294,7 @@ namespace Guard
             if (duplicateGroups.Any())
             {
                 var duplicates = duplicateGroups.SelectMany(g => g).ToList();
+                this.Hide();
                 var (deleteResult, selectedDuplicates) = ShowFormDialog(duplicates);
 
                 if (deleteResult == DialogResult.OK && selectedDuplicates != null && selectedDuplicates.Any())
@@ -317,6 +306,7 @@ namespace Guard
                     RemoveAllDuplicates(duplicateGroups);
                 }
                 UpdatePhotoList();
+                this.Show();
             }
             else
             {
