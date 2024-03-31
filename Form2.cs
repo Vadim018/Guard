@@ -10,16 +10,12 @@ namespace Guard {
 
         public List<string> SelectedDuplicates { get; private set; }
         private List<string> deletedFiles = new List<string>();
-        private List<string> selectedPhotos;
-        private List<string> previousSelectedPhotos;
         
         public Form2(List<string> duplicates, List<string> selectedPhotos)
         {
             InitializeComponent();
             listBox1.Items.AddRange(duplicates.ToArray());
             listBox1.SelectionMode = SelectionMode.MultiExtended;
-            this.selectedPhotos = selectedPhotos;
-            this.previousSelectedPhotos = new List<string>(selectedPhotos);
         }
 
         private List<string> LeaveOneFromEachGroup(List<string> duplicates) {
@@ -56,8 +52,6 @@ namespace Guard {
 
         private void backToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            selectedPhotos.Clear();
-            selectedPhotos.AddRange(previousSelectedPhotos);
             DialogResult = DialogResult.Cancel;
             Close();
         }

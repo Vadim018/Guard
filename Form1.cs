@@ -11,7 +11,6 @@ namespace Guard
     public partial class Form1 : Form
     {
         private List<string> selectedPhotos = new List<string>();
-        private List<string> previousSelectedPhotos = new List<string>();
 
         public Form1()
         {
@@ -19,7 +18,6 @@ namespace Guard
             listBox1.DrawMode = DrawMode.OwnerDrawFixed;
             listBox1.SelectionMode = SelectionMode.MultiExtended;
             listBox1.DrawItem += new DrawItemEventHandler(listBox1_DrawItem);
-            listBox1.DoubleClick += new EventHandler(listBox1_DoubleClick);
             listBox1.MouseDown += new MouseEventHandler(listBox1_MouseDown);
             this.KeyPreview = true;
             this.KeyDown += Form1_KeyDown;
@@ -40,11 +38,6 @@ namespace Guard
                     listBox1.ClearSelected();
                 }
             }
-        }
-
-        private void listBox1_DoubleClick(object sender, EventArgs e)
-        {
-           
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -229,7 +222,7 @@ namespace Guard
 
         private void RenameFile(string filePath, Form form1)
         {
-            var renameForm = new RenameForm(filePath);
+            var renameForm = new Form3(filePath);
             form1.Hide();
 
             while (true)
@@ -310,7 +303,7 @@ namespace Guard
             }
             else
             {
-                StylishMessageBox.Show("No duplicates found among these files!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("No duplicates found among these files!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -416,7 +409,7 @@ namespace Guard
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Escape)
+            if (e.KeyCode == Keys.Escape)
             {
                 Close();
             }
